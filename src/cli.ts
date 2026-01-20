@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { addProjectConfig, removeProjectConfig, listConfigs, clearConfigs, showStatus, initProjectConfig, restartClaudeDesktop, setMcpServerPath, showConfig } from './manager';
+import { addProjectConfig, removeProjectConfig, listConfigs, clearConfigs, showStatus, initProjectConfig, restartClaudeDesktop, setMcpServerPath, showConfig, listBackups, cleanBackups } from './manager';
 
 const program = new Command();
 
@@ -127,6 +127,37 @@ program
   .action(() => {
     try {
       restartClaudeDesktop();
+    } catch (error) {
+      console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
+  });
+
+// backup コマンドグループ
+const backupCmd = program
+  .command('backup')
+  .description('バックアップファイルを管理');
+
+backupCmd
+  .command('list')
+  .description('バックアップファイルの一覧を表示')
+  .action(() => {
+    try {
+      listBackups();
+    } catch (error) {
+      console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
+  });
+
+backupCmd
+  .command('clean')
+  .description('古いバックアップを削除（最新5個だけ残す）')
+  .option('-k, --keep <count>', '残すバックアップの数', '5')
+  .action((options: { keep?: string }) => {
+    try {
+      const keepCount = parseInt(options.keep || '5', 10);
+      cleanBackups(keepCount);
     } catch (error) {
       console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
       process.exit(1);

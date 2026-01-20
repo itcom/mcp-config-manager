@@ -42,6 +42,54 @@ export function writeClaudeConfig(config: ClaudeDesktopConfig): void {
 }
 
 /**
+ * バックアップファイルの一覧を取得（新しい順）
+ */
+export function listBackupFiles(): string[] {
+  const configPath = getClaudeConfigPath();
+  const configDir = path.dirname(configPath);
+  
+  if (!fs.existsSync(configDir)) {
+    return [];
+  }
+  
+  const files = fs.readdirSync(configDir);
+  const backupFiles = files
+    .filter(f => f.startsWith('claude_desktop_config.backup.'))
+    .map(f => path.join(configDir, f))
+    .map(f => ({
+      path: f,
+      mtime: fs.statSync(f).mtime.getTime()
+    }))
+    .sort((a, b) => b.mtime - a.mtime) // 新しい順
+    .map(f => f.path);
+  
+  return backupFiles;
+}
+
+/**
+ * 古いバックアップファイルを削除（最新N個だけ残す）
+ */
+export function cleanOldBackups(keepCount: number = 5): number {
+  const backups = listBackupFiles();
+  
+  if (backups.length <= keepCount) {
+    return 0;
+  }
+  
+  const toDelete = backups.slice(keepCount);
+  
+  toDelete.forEach(file => {
+    try {
+      fs.unlinkSync(file);
+    } catch (error) {
+      // 削除できなくても続行
+    }
+  });
+  
+  return toDelete.length;
+}
+
+/**
  * 設定ファイルのバックアップを作成
  */
 export function backupClaudeConfig(): string {
@@ -53,6 +101,9 @@ export function backupClaudeConfig(): string {
   
   const backupPath = getBackupPath();
   fs.copyFileSync(configPath, backupPath);
+  
+  // 古いバックアップを自動削除（最新5個だけ残す）
+  cleanOldBackups(5);
   
   return backupPath;
 }

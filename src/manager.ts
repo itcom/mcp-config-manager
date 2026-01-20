@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
-import { readClaudeConfig, writeClaudeConfig, backupClaudeConfig, readProjectConfig, normalizePath, readManagerConfig, writeManagerConfig, ensureMcpServerPath } from './config';
+import { readClaudeConfig, writeClaudeConfig, backupClaudeConfig, readProjectConfig, normalizePath, readManagerConfig, writeManagerConfig, ensureMcpServerPath, listBackupFiles, cleanOldBackups } from './config';
 import { ClaudeDesktopConfig, McpManagerConfig } from './types';
 
 /**
@@ -384,4 +384,51 @@ export function showStatus(): void {
       console.log(`  ${index + 1}. ${name}`);
     });
   }
+}
+
+/**
+ * バックアップファイルの一覧を表示
+ */
+export function listBackups(): void {
+  const backups = listBackupFiles();
+  
+  if (backups.length === 0) {
+    console.log('📋 バックアップファイルが存在しません');
+    return;
+  }
+  
+  console.log(`📋 バックアップファイル: ${backups.length}個\n`);
+  
+  backups.forEach((file, index) => {
+    const stat = fs.statSync(file);
+    const size = (stat.size / 1024).toFixed(2);
+    const date = stat.mtime.toLocaleString('ja-JP');
+    const filename = path.basename(file);
+    
+    console.log(`${index + 1}. ${filename}`);
+    console.log(`   日時: ${date}`);
+    console.log(`   サイズ: ${size} KB\n`);
+  });
+}
+
+/**
+ * 古いバックアップファイルを削除
+ */
+export function cleanBackups(keepCount: number = 5): void {
+  const backupsBefore = listBackupFiles();
+  
+  if (backupsBefore.length === 0) {
+    console.log('📋 バックアップファイルが存在しません');
+    return;
+  }
+  
+  if (backupsBefore.length <= keepCount) {
+    console.log(`✅ バックアップは${backupsBefore.length}個です。削除の必要はありません。`);
+    return;
+  }
+  
+  const deletedCount = cleanOldBackups(keepCount);
+  
+  console.log(`✨ ${deletedCount}個の古いバックアップを削除しました`);
+  console.log(`📋 残り: ${backupsBefore.length - deletedCount}個`);
 }
