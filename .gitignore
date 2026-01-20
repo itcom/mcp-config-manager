@@ -5,3 +5,4 @@ dist/
 .env
 *.backup.json
 .mcp-config.json
+scripts/

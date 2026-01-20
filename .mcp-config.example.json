@@ -1,9 +1,9 @@
 {
   "name": "your-project-name",
   "config": {
-    "command": "/Users/itcom/Library/Application Support/Herd/config/nvm/versions/node/v22.15.0/bin/node",
+    "command": "/path/to/node",
     "args": [
-      "/Volumes/ExtremeSSD/workspace/Herd/mcp-server/dist/index.js"
+      "/path/to/mcp-server/dist/index.js"
     ],
     "env": {
       "SERVER_ROOT": "/path/to/your/project",

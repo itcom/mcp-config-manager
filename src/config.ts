@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ClaudeDesktopConfig, ProjectMcpConfig, getClaudeConfigPath, getBackupPath } from './types';
+import { ClaudeDesktopConfig, ProjectMcpConfig, McpManagerConfig, getClaudeConfigPath, getBackupPath, getManagerConfigDir, getManagerConfigPath } from './types';
 
 /**
  * Claude Desktop設定ファイルを読み込む
@@ -93,4 +93,68 @@ export function normalizePath(inputPath: string): string {
   
   // 絶対パスに変換
   return path.resolve(inputPath);
+}
+
+/**
+ * mcp-managerのグローバル設定を読み込む
+ */
+export function readManagerConfig(): McpManagerConfig | null {
+  const configPath = getManagerConfigPath();
+  
+  if (!fs.existsSync(configPath)) {
+    return null;
+  }
+  
+  try {
+    const content = fs.readFileSync(configPath, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    throw new Error(`mcp-manager設定の読み込みに失敗しました: ${error}`);
+  }
+}
+
+/**
+ * mcp-managerのグローバル設定を書き込む
+ */
+export function writeManagerConfig(config: McpManagerConfig): void {
+  const configDir = getManagerConfigDir();
+  const configPath = getManagerConfigPath();
+  
+  // ディレクトリが存在しない場合は作成
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+  
+  try {
+    const content = JSON.stringify(config, null, 2);
+    fs.writeFileSync(configPath, content, 'utf-8');
+  } catch (error) {
+    throw new Error(`mcp-manager設定の書き込みに失敗しました: ${error}`);
+  }
+}
+
+/**
+ * MCPサーバーのパスが設定されているか確認
+ */
+export function ensureMcpServerPath(): string {
+  const config = readManagerConfig();
+  
+  if (!config || !config.mcpServerPath) {
+    throw new Error(
+      'MCPサーバーのパスが設定されていません。\n' +
+      '次のコマンドで設定してください:\n' +
+      '  mcp-manager config set-mcp-server <path>'
+    );
+  }
+  
+  // パスが存在するか確認
+  if (!fs.existsSync(config.mcpServerPath)) {
+    throw new Error(
+      `MCPサーバーが見つかりません: ${config.mcpServerPath}\n` +
+      '次のコマンドで正しいパスを設定してください:\n' +
+      '  mcp-manager config set-mcp-server <path>'
+    );
+  }
+  
+  return config.mcpServerPath;
 }

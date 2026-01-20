@@ -25,6 +25,13 @@ export interface ClaudeDesktopConfig {
 }
 
 /**
+ * mcp-managerのグローバル設定
+ */
+export interface McpManagerConfig {
+  mcpServerPath: string;
+}
+
+/**
  * Claude Desktop設定ファイルのパス
  */
 export function getClaudeConfigPath(): string {
@@ -50,4 +57,18 @@ export function getBackupPath(): string {
   const dir = path.dirname(configPath);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   return path.join(dir, `claude_desktop_config.backup.${timestamp}.json`);
+}
+
+/**
+ * mcp-managerの設定ディレクトリパス
+ */
+export function getManagerConfigDir(): string {
+  return path.join(os.homedir(), '.mcp-manager');
+}
+
+/**
+ * mcp-managerの設定ファイルパス
+ */
+export function getManagerConfigPath(): string {
+  return path.join(getManagerConfigDir(), 'config.json');
 }

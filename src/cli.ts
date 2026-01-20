@@ -1,21 +1,70 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { addProjectConfig, removeProjectConfig, listConfigs, clearConfigs, showStatus } from './manager';
+import { addProjectConfig, removeProjectConfig, listConfigs, clearConfigs, showStatus, initProjectConfig, restartClaudeDesktop, setMcpServerPath, showConfig } from './manager';
 
 const program = new Command();
 
 program
   .name('mcp-manager')
   .description('Claude Desktop の MCP サーバー設定をプロジェクトごとに管理')
-  .version('1.0.0');
+  .version('1.0.0')
+  .addHelpText('after', '\n使用例:\n' +
+    '  $ mcp-manager config set-mcp-server /path/to/mcp-server/dist/index.js\n' +
+    '  $ mcp-manager init\n' +
+    '  $ mcp-manager add . -r\n' +
+    '  $ mcp-manager remove . -r\n' +
+    '\nオプション詳細は各コマンドで --help を実行してください (例: mcp-manager add --help)'
+  );
+
+// config コマンドグループ
+const configCmd = program
+  .command('config')
+  .description('mcp-manager の設定を管理');
+
+configCmd
+  .command('set-mcp-server <path>')
+  .description('MCPサーバーのパスを設定')
+  .action((serverPath: string) => {
+    try {
+      setMcpServerPath(serverPath);
+    } catch (error) {
+      console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
+  });
+
+configCmd
+  .command('show')
+  .description('現在の設定を表示')
+  .action(() => {
+    try {
+      showConfig();
+    } catch (error) {
+      console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('init')
+  .description('現在のディレクトリに .mcp-config.json を作成')
+  .action(() => {
+    try {
+      initProjectConfig();
+    } catch (error) {
+      console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
+  });
 
 program
   .command('add <project-path>')
-  .description('プロジェクトのMCP設定を追加')
-  .action((projectPath: string) => {
+  .description('プロジェクトのMCP設定を追加 (オプション: -r で自動再起動)')
+  .option('-r, --restart', 'Claude Desktop を自動的に再起動')
+  .action((projectPath: string, options: { restart?: boolean }) => {
     try {
-      addProjectConfig(projectPath);
+      addProjectConfig(projectPath, options);
     } catch (error) {
       console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
       process.exit(1);
@@ -24,10 +73,11 @@ program
 
 program
   .command('remove <project-path>')
-  .description('プロジェクトのMCP設定を削除')
-  .action((projectPath: string) => {
+  .description('プロジェクトのMCP設定を削除 (オプション: -r で自動再起動)')
+  .option('-r, --restart', 'Claude Desktop を自動的に再起動')
+  .action((projectPath: string, options: { restart?: boolean }) => {
     try {
-      removeProjectConfig(projectPath);
+      removeProjectConfig(projectPath, options);
     } catch (error) {
       console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
       process.exit(1);
@@ -48,10 +98,11 @@ program
 
 program
   .command('clear')
-  .description('すべてのMCP設定を削除')
-  .action(() => {
+  .description('すべてのMCP設定を削除 (オプション: -r で自動再起動)')
+  .option('-r, --restart', 'Claude Desktop を自動的に再起動')
+  .action((options: { restart?: boolean }) => {
     try {
-      clearConfigs();
+      clearConfigs(options);
     } catch (error) {
       console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
       process.exit(1);
@@ -64,6 +115,18 @@ program
   .action(() => {
     try {
       showStatus();
+    } catch (error) {
+      console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('restart')
+  .description('Claude Desktop を再起動')
+  .action(() => {
+    try {
+      restartClaudeDesktop();
     } catch (error) {
       console.error(`❌ エラー: ${error instanceof Error ? error.message : error}`);
       process.exit(1);
