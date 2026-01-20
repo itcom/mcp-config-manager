@@ -1,0 +1,12 @@
+{
+  "name": "example-project-mcp",
+  "config": {
+    "command": "node",
+    "args": [
+      "/path/to/your/mcp-server/dist/index.js"
+    ],
+    "env": {
+      "ALLOWED_DIRECTORIES": "/path/to/your/project"
+    }
+  }
+}

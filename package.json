@@ -1,0 +1,31 @@
+{
+  "name": "mcp-config-manager",
+  "version": "1.0.0",
+  "description": "Manage MCP server configurations for Claude Desktop per project",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-manager": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "ts-node src/cli.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "claude",
+    "mcp",
+    "config",
+    "manager"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  }
+}
