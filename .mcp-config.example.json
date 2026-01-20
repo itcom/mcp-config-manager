@@ -1,12 +1,14 @@
 {
-  "name": "example-project-mcp",
+  "name": "your-project-name",
   "config": {
-    "command": "node",
+    "command": "/Users/itcom/Library/Application Support/Herd/config/nvm/versions/node/v22.15.0/bin/node",
     "args": [
-      "/path/to/your/mcp-server/dist/index.js"
+      "/Volumes/ExtremeSSD/workspace/Herd/mcp-server/dist/index.js"
     ],
     "env": {
-      "ALLOWED_DIRECTORIES": "/path/to/your/project"
+      "SERVER_ROOT": "/path/to/your/project",
+      "MCP_MODE": "stdio",
+      "PROJECT_ID": "your-project-name"
     }
   }
 }
